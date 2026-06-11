@@ -1,51 +1,42 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>ペット監視カメラ (完全版)</title>
-    <style>
-        video { width: 100%; max-width: 400px; background: #000; border-radius: 8px; }
-        .container { padding: 20px; font-family: sans-serif; }
-        button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
-    </style>
+<meta charset="UTF-8">
+<title>ペット監視カメラ</title>
+<style>
+video {
+  width: 100%;
+  max-width: 600px;
+}
+button {
+  padding: 10px 20px;
+  font-size: 18px;
+}
+</style>
 </head>
 <body>
-<div class="container">
-    <h2>🐾 ペット監視カメラ</h2>
-    
-    <video id="local-video" autoplay playsinline muted></video>
-    <p>※自分のカメラ映像</p>
-    <hr>
-    <video id="remote-video" autoplay playsinline></video>
-    <p>※相手のカメラ映像</p>
 
-    <button id="start-video">① カメラを起動して配信</button>
-    <button id="join-room">② 映像を見る（外出先用）</button>
-</div>
+<h2>🐾 ペット監視カメラ</h2>
 
-<script type="importmap">
-  {
-    "imports": {
-      "skyway": "https://cdn.jsdelivr.net/npm/@skyway-sdk/room@latest/dist/skyway_room.esm.js"
-    }
-  }
-</script>
-<!DOCTYPE html>
-<html>
-<body>
+<video id="local-video" autoplay playsinline muted></video>
 
-<video id="video" autoplay playsinline muted></video>
-<button id="start">カメラ起動</button>
+<br><br>
+
+<button id="start-video">
+カメラ起動
+</button>
 
 <script>
-document.getElementById("start").onclick = async () => {
+document.getElementById("start-video").onclick = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: false
     });
 
-    document.getElementById("video").srcObject = stream;
+    document.getElementById("local-video").srcObject = stream;
+
+    alert("カメラ接続成功！");
   } catch(err) {
     console.error(err);
     alert(err.message);
@@ -53,55 +44,5 @@ document.getElementById("start").onclick = async () => {
 };
 </script>
 
-</body>
-</html>
-
-<script type="module">
-    import { SkyWayContext, SkyWayRoom, SkyWayStreamFactory } from 'skyway';
-
-    // ⚠️ あなたのAppIDに書き換えてください
-    const SKYWAY_APP_ID = '527ba194-8fda-4a79-b720-0aa77427b433'; 
-    
-    let localStream, context, room;
-
-    document.getElementById('start-video').addEventListener('click', async () => {
-        try {
-            localStream = await SkyWayStreamFactory.createCameraVideoStream();
-            document.getElementById('local-video').srcObject = localStream;
-
-            context = await SkyWayContext.Create({ appId: SKYWAY_APP_ID });
-            room = await SkyWayRoom.FindOrCreate(context, { type: 'p2p', name: 'pet-monitor-room' });
-            const me = await room.join();
-
-            await me.publish(localStream);
-            alert('配信を開始しました！');
-        } catch (error) {
-            console.error('配信エラー:', error);
-        }
-    });
-
-    document.getElementById('join-room').addEventListener('click', async () => {
-        try {
-            context = await SkyWayContext.Create({ appId: SKYWAY_APP_ID });
-            room = await SkyWayRoom.FindOrCreate(context, { type: 'p2p', name: 'pet-monitor-room' });
-            const me = await room.join();
-
-            const subscribeAndAttach = async (publication) => {
-                if (publication.publisher.id === me.id) return; 
-                const { stream } = await me.subscribe(publication.id);
-                document.getElementById('remote-video').srcObject = stream;
-            };
-
-            room.publications.forEach(subscribeAndAttach);
-            room.onStreamPublished.add((e) => subscribeAndAttach(e.publication));
-            alert('受信モードになりました！');
-        } catch (error) {
-            console.error('受信エラー:', error);
-        }
-    });
-
-
-
-</script>
 </body>
 </html>
