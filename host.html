@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>配信側</title>
+</head>
+<body>
+
+<h2>🐾 配信側（Mac）</h2>
+
+<video id="localVideo" autoplay playsinline muted style="width:600px;"></video>
+
+<br><br>
+
+<button id="startBtn">配信開始</button>
+
+<script>
+document.getElementById("startBtn").onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false
+    });
+
+    document.getElementById("localVideo").srcObject = stream;
+
+    alert("配信準備OK");
+  } catch(err) {
+    alert(err.message);
+  }
+};
+</script>
+
+</body>
+</html>
